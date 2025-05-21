@@ -11,7 +11,7 @@ import SwiftUI
 struct QuickSplitApp: App {
     var body: some Scene {
         WindowGroup {
-            ReceiptScannerView()
+            ContentView()
         }
     }
 }

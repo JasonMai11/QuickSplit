@@ -2,7 +2,7 @@ import SwiftUI
 import VisionKit
 
 struct ReceiptScannerView: View {
-    @StateObject private var viewModel = ReceiptViewModel()
+    @ObservedObject var viewModel: ReceiptViewModel
     @State private var showingScanner = false
     @State private var showingManualEntry = false
     @State private var showingTestView = false
@@ -11,7 +11,7 @@ struct ReceiptScannerView: View {
         NavigationView {
             VStack {
                 if let receipt = viewModel.currentReceipt {
-                    ReceiptDetailView(receipt: receipt, viewModel: viewModel)
+                    ReceiptDetailView(viewModel: viewModel)
                 } else {
                     welcomeView
                 }
@@ -52,36 +52,31 @@ struct ReceiptScannerView: View {
     
     private var welcomeView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "receipt")
+            Image(systemName: "doc.text.viewfinder")
                 .font(.system(size: 60))
                 .foregroundColor(.blue)
-                .accessibilityIdentifier("receipt")
             
-            Text("Welcome to QuickSplit")
+            Text("Scan a Receipt")
                 .font(.title)
-                .bold()
-                .accessibilityIdentifier("Welcome to QuickSplit")
             
-            Text("Scan a receipt to get started")
+            Text("Take a photo of your receipt to get started")
                 .foregroundColor(.secondary)
-                .accessibilityIdentifier("Scan a receipt to get started")
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
             
             Button(action: { showingScanner = true }) {
-                Label("Scan Receipt", systemImage: "doc.text.viewfinder")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
+                Label("Scan Receipt", systemImage: "camera")
+                    .frame(maxWidth: .infinity)
             }
-            .accessibilityIdentifier("Scan Receipt")
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal)
             
             Button(action: { showingManualEntry = true }) {
-                Label("Enter Manually", systemImage: "pencil")
-                    .font(.headline)
-                    .foregroundColor(.blue)
+                Label("Manual Entry", systemImage: "pencil")
+                    .frame(maxWidth: .infinity)
             }
-            .accessibilityIdentifier("Enter Manually")
+            .buttonStyle(.bordered)
+            .padding(.horizontal)
         }
         .padding()
     }

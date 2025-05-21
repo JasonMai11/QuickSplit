@@ -1,6 +1,6 @@
 import Foundation
 
-struct Receipt: Identifiable, Codable {
+struct Receipt: Identifiable, Codable, Equatable {
     let id: UUID
     var items: [ReceiptItem]
     var subtotal: Double
@@ -20,9 +20,13 @@ struct Receipt: Identifiable, Codable {
         self.date = date
         self.restaurantName = restaurantName
     }
+    
+    static func == (lhs: Receipt, rhs: Receipt) -> Bool {
+        lhs.id == rhs.id
+    }
 }
 
-struct ReceiptItem: Identifiable, Codable {
+struct ReceiptItem: Identifiable, Codable, Equatable {
     let id: UUID
     var name: String
     var price: Double
@@ -48,15 +52,14 @@ struct ReceiptItem: Identifiable, Codable {
     var remainingQuantity: Int {
         let takenPortions = sharedBy.reduce(0) { total, share in
             if share.isShared {
-                // For shared items, we need to track how many people are actually sharing
-                // Each person who shares counts as 1 portion
+                // For shared items, each person counts as 1 portion
                 return total + 1
             } else {
                 // For individual portions, count the actual portions taken
                 return total + share.portions
             }
         }
-        return quantity - takenPortions
+        return max(0, quantity - takenPortions)
     }
     
     var sharingStatus: String {
@@ -80,9 +83,13 @@ struct ReceiptItem: Identifiable, Codable {
         
         return status
     }
+    
+    static func == (lhs: ReceiptItem, rhs: ReceiptItem) -> Bool {
+        lhs.id == rhs.id
+    }
 }
 
-struct ItemShare: Identifiable, Codable {
+struct ItemShare: Identifiable, Codable, Equatable {
     let id: UUID
     var userId: UUID
     var userName: String
@@ -105,5 +112,9 @@ struct ItemShare: Identifiable, Codable {
         } else {
             return Double(portions) // Direct portions for individual items
         }
+    }
+    
+    static func == (lhs: ItemShare, rhs: ItemShare) -> Bool {
+        lhs.id == rhs.id
     }
 } 

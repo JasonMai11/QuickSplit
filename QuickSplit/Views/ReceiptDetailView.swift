@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ReceiptDetailView: View {
-    let receipt: Receipt
     @ObservedObject var viewModel: ReceiptViewModel
     @State private var showingShareSheet = false
     @State private var showingShareDialog = false
@@ -10,7 +9,7 @@ struct ReceiptDetailView: View {
     var body: some View {
         List {
             Section(header: Text("Items")) {
-                ForEach(receipt.items) { item in
+                ForEach(viewModel.currentReceipt?.items ?? []) { item in
                     ReceiptItemRow(item: item, viewModel: viewModel)
                         .onTapGesture {
                             selectedItem = item
@@ -23,7 +22,7 @@ struct ReceiptDetailView: View {
                 HStack {
                     Text("Subtotal")
                     Spacer()
-                    Text("$\(String(format: "%.2f", receipt.subtotal))")
+                    Text("$\(String(format: "%.2f", viewModel.currentReceipt?.subtotal ?? 0))")
                 }
                 
                 if viewModel.includeTax {
@@ -31,7 +30,7 @@ struct ReceiptDetailView: View {
                         Text("Tax")
                             .accessibilityIdentifier("Tax Label")
                         Spacer()
-                        Text("$\(String(format: "%.2f", receipt.tax))")
+                        Text("$\(String(format: "%.2f", viewModel.currentReceipt?.tax ?? 0))")
                             .accessibilityIdentifier("Tax Amount")
                     }
                 }
@@ -40,7 +39,7 @@ struct ReceiptDetailView: View {
                     Text("Tip (\(Int(viewModel.tipPercentage))%)")
                         .accessibilityIdentifier("Tip Label")
                     Spacer()
-                    Text("$\(String(format: "%.2f", receipt.tip))")
+                    Text("$\(String(format: "%.2f", viewModel.currentReceipt?.tip ?? 0))")
                         .accessibilityIdentifier("Tip Amount")
                 }
                 
@@ -48,7 +47,7 @@ struct ReceiptDetailView: View {
                     Text("Total")
                         .fontWeight(.bold)
                     Spacer()
-                    Text("$\(String(format: "%.2f", receipt.total))")
+                    Text("$\(String(format: "%.2f", viewModel.currentReceipt?.total ?? 0))")
                         .fontWeight(.bold)
                 }
             }
@@ -104,6 +103,8 @@ struct ReceiptDetailView: View {
     }
     
     private func generateShareText() -> String {
+        guard let receipt = viewModel.currentReceipt else { return "" }
+        
         let itemsText = receipt.items.map { item in
             let sharesText = item.sharedBy.map { share in
                 "  - \(share.userName): \(share.portions) portion\(share.portions > 1 ? "s" : "")"

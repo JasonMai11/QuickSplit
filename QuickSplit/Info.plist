@@ -21,9 +21,9 @@
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>NSCameraUsageDescription</key>
-    <string>QuickSplit needs camera access to scan receipts for bill splitting.</string>
+    <string>QuickSplit needs camera access to scan receipts and help you split bills with friends.</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>QuickSplit needs photo library access to save and process receipt images.</string>
+    <string>QuickSplit needs photo library access to let you select receipt photos for bill splitting.</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>

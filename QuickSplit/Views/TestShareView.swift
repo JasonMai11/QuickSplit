@@ -16,9 +16,7 @@ struct TestShareView: View {
             .buttonStyle(.borderedProminent)
         }
         .sheet(isPresented: $showingReceiptDetail) {
-            if let receipt = viewModel.currentReceipt {
-                ReceiptDetailView(receipt: receipt, viewModel: viewModel)
-            }
+            ReceiptDetailView(viewModel: viewModel)
         }
     }
 }

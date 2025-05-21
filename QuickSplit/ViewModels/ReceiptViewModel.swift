@@ -5,6 +5,7 @@ import SwiftUI
 
 @MainActor
 class ReceiptViewModel: ObservableObject {
+    @Published var receipts: [Receipt] = []
     @Published var currentReceipt: Receipt?
     @Published var isScanning = false
     @Published var errorMessage: String?
@@ -41,14 +42,31 @@ class ReceiptViewModel: ObservableObject {
         guard var receipt = currentReceipt else { return }
         
         if let index = receipt.items.firstIndex(where: { $0.id == item.id }) {
-            let share = ItemShare(userId: user.id, userName: user.name, portions: portions, isShared: isShared)
+            if let existingShareIndex = receipt.items[index].sharedBy.firstIndex(where: { $0.userId == user.id }) {
+                // If user already has a share, add to their portions
+                let existingShare = receipt.items[index].sharedBy[existingShareIndex]
+                let newPortions = existingShare.portions + portions
+                let updatedShare = ItemShare(
+                    id: existingShare.id,
+                    userId: user.id,
+                    userName: user.name,
+                    portions: newPortions,
+                    isShared: isShared,
+                    dateAdded: existingShare.dateAdded
+                )
+                receipt.items[index].sharedBy[existingShareIndex] = updatedShare
+            } else {
+                // If user doesn't have a share, create a new one
+                let share = ItemShare(userId: user.id, userName: user.name, portions: portions, isShared: isShared)
+                receipt.items[index].sharedBy.append(share)
+            }
             
-            // Remove existing share if any
-            receipt.items[index].sharedBy.removeAll { $0.userId == user.id }
-            // Add new share
-            receipt.items[index].sharedBy.append(share)
-            
+            // Update both currentReceipt and the receipt in the receipts array
             currentReceipt = receipt
+            if let receiptIndex = receipts.firstIndex(where: { $0.id == receipt.id }) {
+                receipts[receiptIndex] = receipt
+            }
+            
             calculateTotals()
         }
     }
@@ -58,7 +76,13 @@ class ReceiptViewModel: ObservableObject {
         
         if let index = receipt.items.firstIndex(where: { $0.id == item.id }) {
             receipt.items[index].sharedBy.removeAll { $0.id == share.id }
+            
+            // Update both currentReceipt and the receipt in the receipts array
             currentReceipt = receipt
+            if let receiptIndex = receipts.firstIndex(where: { $0.id == receipt.id }) {
+                receipts[receiptIndex] = receipt
+            }
+            
             calculateTotals()
         }
     }
@@ -181,13 +205,32 @@ class ReceiptViewModel: ObservableObject {
         return nil
     }
     
+    // MARK: - Receipt Management
+    
+    func addReceipt(_ receipt: Receipt) {
+        print("Adding receipt: \(receipt.restaurantName) with \(receipt.items.count) items")
+        receipts.append(receipt)
+        currentReceipt = receipt
+        print("Total receipts: \(receipts.count)")
+    }
+    
+    func removeReceipt(_ receipt: Receipt) {
+        receipts.removeAll { $0.id == receipt.id }
+        if currentReceipt?.id == receipt.id {
+            currentReceipt = nil
+        }
+    }
+    
     // MARK: - Testing
     
     func createTestReceipt() {
+        print("Creating test receipt...")
+        
         // Add test participants
         addParticipant(name: "John")
         addParticipant(name: "Sarah")
         addParticipant(name: "Mike")
+        print("Added participants: \(participants.count)")
         
         // Create test items
         let items = [
@@ -195,13 +238,19 @@ class ReceiptViewModel: ObservableObject {
             ReceiptItem(name: "Big Platter", price: 30.00, quantity: 1),
             ReceiptItem(name: "Drinks", price: 3.50, quantity: 2)
         ]
+        print("Created test items: \(items.count)")
         
-        currentReceipt = Receipt(
+        let testReceipt = Receipt(
             items: items,
             restaurantName: "Test Restaurant"
         )
         
+        // Add the receipt to the receipts array
+        addReceipt(testReceipt)
+        
+        // Calculate totals
         calculateTotals()
+        print("Test receipt created and added to receipts array")
     }
 }
 
